@@ -16,6 +16,15 @@ Your real typing speed in the Omarchy bar, measured while you work in any app.
 It is not a typing test. There is no text to copy, so it cannot see mistakes.
 It measures speed, not accuracy.
 
+## Themes
+
+The widget takes its colors from your Omarchy theme. Here it is in three of
+the stock themes.
+
+| Tokyo Night | Catppuccin Latte | Gruvbox |
+|---|---|---|
+| <img src="screenshots/theme-tokyo-night.png" width="270" alt="Live WPM in the Tokyo Night theme"> | <img src="screenshots/theme-catppuccin-latte.png" width="270" alt="Live WPM in the Catppuccin Latte theme"> | <img src="screenshots/theme-gruvbox.png" width="270" alt="Live WPM in the Gruvbox theme"> |
+
 ## Install
 
 Requires Omarchy 4 (tested on 4.5.0). It uses Python 3 from the system, with
