@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "io.github.tonciz.live-wpm",
+  "name": "Live WPM",
+  "version": "1.0.0",
+  "author": "Tonči Žižić",
+  "license": "MIT",
+  "description": "Live typing speed (WPM) in the bar, measured across all apps from key timings only, with a history page for days, weeks, months and years.",
+  "kinds": [
+    "service",
+    "bar-widget"
+  ],
+  "keepLoaded": true,
+  "entryPoints": {
+    "service": "Service.qml",
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "Live WPM",
+    "description": "Live WPM in the bar. Click for session and history numbers, three sliders, pause and the ignore list.",
+    "category": "Status",
+    "aliases": [
+      "wpm",
+      "typing-speed"
+    ],
+    "allowMultiple": false,
+    "defaultSection": "left"
+  }
+}

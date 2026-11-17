@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Rebuilt by wpm-reader.py about once a minute; reload to pick it up. -->
+<meta http-equiv="refresh" content="60">
+<title>Typing Speed History</title>
+<style>
+  :root {
+    color-scheme: light;
+    --surface: #fcfcfb;
+    --surface-2: #f3f2ef;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted: #7b7a75;
+    --grid: #e4e3df;
+    --series-1: #2a78d6;   /* WPM */
+    --series-2: #eb6834;   /* peak */
+    --border: #e4e3df;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --surface: #1a1a19;
+      --surface-2: #232322;
+      --text-primary: #f0efec;
+      --text-secondary: #c3c2b7;
+      --text-muted: #8f8e86;
+      --grid: #2e2e2c;
+      --series-1: #3987e5;
+      --series-2: #d95926;
+      --border: #2e2e2c;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --surface: #1a1a19;
+    --surface-2: #232322;
+    --text-primary: #f0efec;
+    --text-secondary: #c3c2b7;
+    --text-muted: #8f8e86;
+    --grid: #2e2e2c;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --border: #2e2e2c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--surface);
+    color: var(--text-primary);
+    font: 15px/1.45 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 1040px; margin: 0 auto; padding: 28px 16px 48px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  h2 { font-size: 16px; margin: 0 0 12px; }
+  .sub { color: var(--text-secondary); margin: 0 0 24px; font-size: 13px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 28px; }
+  .tile { background: var(--surface-2); border-radius: 10px; padding: 14px 16px; }
+  .tile .label { color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+  .tile .value { font-size: 30px; font-weight: 650; font-variant-numeric: tabular-nums; margin: 2px 0; }
+  .tile .value small { font-size: 14px; font-weight: 500; color: var(--text-secondary); }
+  .tile .meta { color: var(--text-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .controls { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+  .controls button {
+    font: inherit; font-size: 13px; padding: 6px 14px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--border); background: transparent; color: var(--text-secondary);
+  }
+  .controls button[aria-pressed="true"] { background: var(--text-primary); color: var(--surface); border-color: var(--text-primary); }
+  section { margin-bottom: 32px; }
+  .legend { display: flex; gap: 16px; font-size: 12px; color: var(--text-secondary); margin: -4px 0 8px; }
+  .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 6px; vertical-align: -1px; border-radius: 2px; background: var(--swatch); }
+  .legend .dot::before { border-radius: 50%; }
+  .chart { position: relative; }
+  svg { display: block; width: 100%; height: auto; overflow: visible; }
+  svg text { fill: var(--text-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .tip {
+    position: absolute; pointer-events: none; background: var(--text-primary); color: var(--surface);
+    font-size: 12px; padding: 6px 9px; border-radius: 6px; white-space: nowrap; display: none;
+    transform: translate(-50%, calc(-100% - 10px)); font-variant-numeric: tabular-nums;
+  }
+  .empty { color: var(--text-muted); padding: 32px 0; text-align: center; }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+  th, td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--text-secondary); font-weight: 600; }
+  .note { color: var(--text-muted); font-size: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Typing Speed History</h1>
+  <p class="sub" id="sub"></p>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div class="controls" role="group" aria-label="Period">
+    <button type="button" data-view="day">Daily</button>
+    <button type="button" data-view="week">Weekly</button>
+    <button type="button" data-view="month">Monthly</button>
+    <button type="button" data-view="year">Yearly</button>
+  </div>
+
+  <section>
+    <h2 id="wpm-title">WPM</h2>
+    <div class="legend">
+      <span style="--swatch: var(--series-1)">WPM (net)</span>
+      <span class="dot" style="--swatch: var(--series-2)">Peak</span>
+    </div>
+    <div class="chart" id="wpm-chart"></div>
+  </section>
+
+  <section>
+    <h2 id="time-title">Typing time</h2>
+    <div class="chart" id="time-chart"></div>
+  </section>
+
+  <section>
+    <h2>Table</h2>
+    <div class="table-wrap"><table id="table"></table></div>
+  </section>
+
+  <p class="note" id="note"></p>
+</main>
+
+<script>
+const DATA = /*DATA*/{"generated":"","today":"","settings":{},"days":[]}/*END*/;
+const MIN_MS = 10000;   // no WPM until 10 s of typing, same as the bar popup
+const LIMITS = { day: 60, week: 52, month: 120, year: 50 };
+const NAMES = { day: "Daily", week: "Weekly", month: "Monthly", year: "Yearly" };
+
+const pad = n => String(n).padStart(2, "0");
+const parse = s => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+const iso = dt => `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
+function weekStart(s) { const dt = parse(s); dt.setDate(dt.getDate() - ((dt.getDay() + 6) % 7)); return iso(dt); }
+function isoWeek(s) {
+  const dt = parse(s); dt.setDate(dt.getDate() + 3 - ((dt.getDay() + 6) % 7));
+  const jan4 = new Date(dt.getFullYear(), 0, 4);
+  return 1 + Math.round(((dt - jan4) / 864e5 - 3 + ((jan4.getDay() + 6) % 7)) / 7);
+}
+const keyOf = { day: d => d, week: weekStart, month: d => d.slice(0, 7), year: d => d.slice(0, 4) };
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function label(view, k, short) {
+  if (view === "day") { const dt = parse(k); return short ? `${dt.getDate()} ${MONTHS[dt.getMonth()]}` : `${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][dt.getDay()]} ${dt.getDate()} ${MONTHS[dt.getMonth()]} ${dt.getFullYear()}`; }
+  if (view === "week") { const dt = parse(k); return short ? `W${isoWeek(k)}` : `Week ${isoWeek(k)} (from ${dt.getDate()} ${MONTHS[dt.getMonth()]} ${dt.getFullYear()})`; }
+  if (view === "month") { const [y, m] = k.split("-"); return short ? `${MONTHS[m - 1]}` + (m === "01" ? ` ${y}` : "") : `${MONTHS[m - 1]} ${y}`; }
+  return k;
+}
+function agg(days) {
+  const chars = days.reduce((a, d) => a + d.chars, 0), ms = days.reduce((a, d) => a + d.ms, 0);
+  const peaks = days.map(d => d.peak).filter(p => p != null);
+  return { chars, ms, wpm: ms >= MIN_MS ? chars * 12000 / ms : null, peak: peaks.length ? Math.max(...peaks) : null };
+}
+function group(view) {
+  const map = new Map();
+  for (const d of DATA.days) { const k = keyOf[view](d.d); if (!map.has(k)) map.set(k, []); map.get(k).push(d); }
+  // Daily: show every calendar day in range, so idle days read as gaps.
+  if (view === "day" && DATA.days.length) {
+    const first = parse(DATA.days[0].d), last = parse(DATA.today || DATA.days[DATA.days.length - 1].d);
+    for (const dt = new Date(first); dt <= last; dt.setDate(dt.getDate() + 1)) if (!map.has(iso(dt))) map.set(iso(dt), []);
+  }
+  return [...map.keys()].sort().slice(-LIMITS[view]).map(k => ({ key: k, ...agg(map.get(k)) }));
+}
+const fmtWpm = v => v == null ? "–" : Math.round(v).toString();
+function fmtTime(ms) {
+  const s = Math.round(ms / 1000), h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+  return h ? `${h}h ${m}m` : m ? `${m}m` : `${s}s`;
+}
+function niceMax(v) {
+  if (v <= 0) return 1;
+  const p = Math.pow(10, Math.floor(Math.log10(v))), n = v / p;
+  return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p;
+}
+
+const SVGNS = "http://www.w3.org/2000/svg";
+function el(name, attrs, parent) {
+  const e = document.createElementNS(SVGNS, name);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+// Bar with a 4px rounded top, square at the baseline.
+function barPath(x, y, w, h) {
+  const r = Math.min(4, w / 2, h);
+  return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`;
+}
+
+function chart(container, rows, view, opts) {
+  container.innerHTML = "";
+  const values = rows.map(opts.value);
+  if (!values.some(v => v != null && v > 0)) {
+    container.innerHTML = `<div class="empty">No typing recorded in this range yet.</div>`;
+    return;
+  }
+  const W = 1000, H = 260, L = 40, R = 8, T = 12, B = 28;
+  const extra = opts.marker ? rows.map(opts.marker) : [];
+  const max = niceMax(Math.max(...values.filter(v => v != null), ...extra.filter(v => v != null)));
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": opts.aria }, container);
+  const y = v => T + (H - T - B) * (1 - v / max);
+  for (let i = 0; i <= 4; i++) {
+    const v = max * i / 4, yy = y(v);
+    el("line", { x1: L, x2: W - R, y1: yy, y2: yy, stroke: "var(--grid)", "stroke-width": 1 }, svg);
+    el("text", { x: L - 8, y: yy + 4, "text-anchor": "end" }, svg).textContent = opts.tick(v);
+  }
+  const slot = (W - L - R) / rows.length, gap = Math.min(2, slot * 0.2) + Math.max(0, slot * 0.18);
+  const bw = Math.max(1, slot - gap);
+  const every = Math.ceil(rows.length / 10);
+  const tip = document.createElement("div"); tip.className = "tip"; container.appendChild(tip);
+  rows.forEach((r, i) => {
+    const x = L + i * slot + gap / 2, v = opts.value(r);
+    if (v != null && v > 0) el("path", { d: barPath(x, y(v), bw, y(0) - y(v)), fill: "var(--series-1)" }, svg);
+    const m = opts.marker ? opts.marker(r) : null;
+    if (m != null) el("circle", { cx: x + bw / 2, cy: y(m), r: 4.5, fill: "var(--series-2)", stroke: "var(--surface)", "stroke-width": 2 }, svg);
+    if (i % every === 0 || i === rows.length - 1 && rows.length <= 10)
+      el("text", { x: x + bw / 2, y: H - 8, "text-anchor": "middle" }, svg).textContent = label(view, r.key, true);
+    // Hit target: the whole column, not just the bar.
+    const hit = el("rect", { x: L + i * slot, y: T, width: slot, height: H - T - B, fill: "transparent" }, svg);
+    hit.addEventListener("mouseenter", () => {
+      tip.innerHTML = `<b>${label(view, r.key, false)}</b><br>${opts.tip(r)}`;
+      const box = svg.getBoundingClientRect(), sx = box.width / W;
+      tip.style.left = `${(x + bw / 2) * sx}px`;
+      tip.style.top = `${y(Math.max(v || 0, m || 0)) * sx}px`;
+      tip.style.display = "block";
+    });
+    hit.addEventListener("mouseleave", () => { tip.style.display = "none"; });
+  });
+  // Direct label on the most recent value.
+  const lastIdx = values.map((v, i) => v != null && v > 0 ? i : -1).filter(i => i >= 0).pop();
+  if (lastIdx != null && opts.direct) {
+    const x = L + lastIdx * slot + gap / 2 + bw / 2;
+    const mk = opts.marker ? opts.marker(rows[lastIdx]) : null;
+    el("text", { x, y: y(Math.max(values[lastIdx], mk || 0)) - (mk != null ? 11 : 6), "text-anchor": "middle", style: "fill: var(--text-primary); font-weight: 600" }, svg).textContent = opts.direct(values[lastIdx]);
+  }
+}
+
+function tiles() {
+  const t = DATA.today, days = DATA.days;
+  const pick = f => agg(days.filter(f));
+  const list = [
+    ["Today", pick(d => d.d === t)],
+    ["This week", pick(d => weekStart(d.d) === weekStart(t))],
+    ["This month", pick(d => d.d.slice(0, 7) === t.slice(0, 7))],
+    ["This year", pick(d => d.d.slice(0, 4) === t.slice(0, 4))],
+    ["All time", agg(days)],
+  ];
+  document.getElementById("tiles").innerHTML = list.map(([name, a]) => `
+    <div class="tile"><div class="label">${name}</div>
+      <div class="value">${fmtWpm(a.wpm)} <small>wpm</small></div>
+      <div class="meta">peak ${fmtWpm(a.peak)} · ${fmtTime(a.ms)}</div></div>`).join("");
+}
+
+function render(view) {
+  document.querySelectorAll(".controls button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === view)));
+  const rows = group(view);
+  document.getElementById("wpm-title").textContent = `WPM · ${NAMES[view]}`;
+  document.getElementById("time-title").textContent = `Typing time · ${NAMES[view]}`;
+  chart(document.getElementById("wpm-chart"), rows, view, {
+    value: r => r.wpm, marker: r => r.peak, tick: v => Math.round(v), aria: `${NAMES[view]} WPM with peaks`,
+    tip: r => `WPM ${fmtWpm(r.wpm)} · peak ${fmtWpm(r.peak)}<br>${fmtTime(r.ms)} typing · ${r.chars} chars`,
+    direct: v => Math.round(v),
+  });
+  chart(document.getElementById("time-chart"), rows, view, {
+    value: r => r.ms / 60000, tick: v => v === 0 ? "0" : fmtTime(v * 60000),
+    aria: `${NAMES[view]} typing time`, tip: r => `${fmtTime(r.ms)} typing · ${r.chars} chars`,
+  });
+  const body = rows.filter(r => r.ms > 0).reverse().map(r =>
+    `<tr><td>${label(view, r.key, false)}</td><td>${fmtWpm(r.wpm)}</td><td>${fmtWpm(r.peak)}</td><td>${fmtTime(r.ms)}</td><td>${r.chars}</td></tr>`).join("");
+  document.getElementById("table").innerHTML =
+    `<thead><tr><th>Period</th><th>WPM</th><th>Peak</th><th>Typing time</th><th>Chars (net)</th></tr></thead><tbody>${body || `<tr><td colspan="5" class="note">No typing recorded yet.</td></tr>`}</tbody>`;
+}
+
+const s = DATA.settings;
+document.getElementById("sub").textContent =
+  `Updated ${DATA.generated} · refreshes every minute · pauses over ${(s.pause_cutoff_ms / 1000).toFixed(2)} s removed, bursts under ${s.min_burst_keys} keys dropped`;
+document.getElementById("note").textContent =
+  `Net WPM: Backspace takes a letter back, Ctrl+Backspace a word, a held Backspace all it removed. Held letter keys count once, key mashing is dropped. WPM needs 10 s of typing to show. Peak = best ${s.peak_window_s} s of typing (at least ${s.peak_min_chars} chars). ` +
+  `End trim: a ${(s.end_hesitation_ms / 1000).toFixed(2)} s hesitation in the last ${s.end_trim_keys} keys of a burst is dropped. History is recalculated when settings change.`;
+tiles();
+// The period lives in the URL hash so the 60 s refresh keeps it.
+const start = (location.hash || "#day").slice(1);
+render(NAMES[start] ? start : "day");
+document.querySelectorAll(".controls button").forEach(b => b.addEventListener("click", () => {
+  history.replaceState(null, "", "#" + b.dataset.view);
+  render(b.dataset.view);
+}));
+</script>
+</body>
+</html>
