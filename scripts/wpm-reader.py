@@ -90,10 +90,40 @@ def classify(code: int, held_mods: set) -> str | None:
     return None
 
 
+def private_dir(path: str) -> None:
+    """Create path (and parents) owner-only. Typing timings are personal, so
+    other local users must not be able to list or read them."""
+    os.makedirs(path, mode=0o700, exist_ok=True)
+    try:
+        os.chmod(path, 0o700)
+    except OSError:
+        pass
+
+
+def lock_down() -> None:
+    """Make the data and config folders and everything already in them
+    owner-only, for installs that wrote them with the default umask."""
+    for base in (DATA_DIR, CONFIG_DIR):
+        if not os.path.isdir(base):
+            continue
+        for root, dirs, files in os.walk(base):
+            try:
+                os.chmod(root, 0o700)
+            except OSError:
+                pass
+            for name in files:
+                try:
+                    os.chmod(os.path.join(root, name), 0o600)
+                except OSError:
+                    pass
+
+
 def atomic_write(path: str, data: bytes) -> None:
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+    private_dir(os.path.dirname(path))
     tmp = path + ".tmp"
-    with open(tmp, "wb") as f:
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_CLOEXEC, 0o600)
+    with os.fdopen(fd, "wb") as f:
+        os.fchmod(f.fileno(), 0o600)
         f.write(data)
         f.flush()
         os.fsync(f.fileno())
@@ -698,6 +728,11 @@ def main() -> int:
     ap.add_argument("--report", action="store_true",
                     help="rebuild report.html from saved data, print its path and exit")
     args = ap.parse_args()
+
+    # Everything this writes is owner-only (0700 folders, 0600 files),
+    # whatever the session's umask.
+    os.umask(0o077)
+    lock_down()
 
     if args.report:
         Reader(print_mode=True).write_report()

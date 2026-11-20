@@ -95,6 +95,11 @@ Key presses in password fields are counted like any others, as timings. Use
 | History page | `~/.local/share/omarchy-live-wpm/report.html` |
 | Settings and ignore list | `~/.config/omarchy-live-wpm/settings.json` |
 
+Both folders and every file in them are owner-only (folders `0700`, files
+`0600`), whatever your umask, so other users on the same machine cannot read
+your typing timings. Folders left by an older version are tightened the next
+time the reader starts.
+
 ## How the speed is calculated
 
 WPM is characters divided by 5, divided by minutes of typing. The work is in

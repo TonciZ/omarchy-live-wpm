@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.tonciz.live-wpm",
   "name": "Live WPM",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Tonči Žižić",
   "license": "MIT",
   "description": "Live typing speed (WPM) in the bar, measured across all apps from key timings only, with a history page for days, weeks, months and years.",
